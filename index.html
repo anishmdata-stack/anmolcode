@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ANMOL CHILDRENWEAR - Fresh Billing</title>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,Inter,sans-serif;background:#f6f5ff;color:#111;padding-bottom:120px}
+.top{position:sticky;top:0;z-index:20;background:#fff;border-bottom:2px solid #7c3aed;display:flex;align-items:center;justify-content:space-between;padding:10px 14px}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;display:grid;place-items:center;font-weight:900}
+.t1{font-weight:900;font-size:15px;letter-spacing:.2px}
+.t2{font-size:9px;font-weight:800;color:#6b7280;letter-spacing:1px}
+.top-actions{display:flex;gap:8px}
+.icon-btn{width:42px;height:42px;border-radius:12px;border:none;cursor:pointer;font-size:18px;display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,.12)}
+.scan{background:#111827;color:#fff}
+.eye{background:#7c3aed;color:#fff}
+.eye.on{background:#059669}
+.card{background:#fff;border-radius:16px;margin:10px;padding:12px;box-shadow:0 6px 24px rgba(0,0,0,.06);border:1px solid #ede9fe}
+.lbl{font-size:11px;font-weight:800;color:#6b7280;letter-spacing:.6px;margin-bottom:8px;display:flex;justify-content:space-between}
+.input{width:100%;padding:11px 12px;border:1px solid #e5e7eb;border-radius:10px;background:#fafafa;font-size:14px;outline:none}
+.input:focus{background:#fff;border-color:#7c3aed}
+.row{display:flex;gap:8px}
+.btn{border:none;border-radius:10px;padding:11px 14px;font-weight:800;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-p{background:#7c3aed;color:#fff}
+.btn-b{background:#111827;color:#fff}
+.btn-g{background:#f3f4f6;color:#111}
+.chips{display:flex;gap:6px;overflow:auto;margin-top:10px;padding-bottom:2px}
+.chip{padding:7px 12px;border-radius:999px;border:1px solid #e5e7eb;background:#fff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.chip.on{background:#7c3aed;color:#fff;border-color:#7c3aed}
+table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+th{background:#111827;color:#fff;padding:7px 6px;text-align:left;font-size:10px}
+td{padding:7px 6px;border-bottom:1px solid #f3f4f6}
+.hidden{display:none;background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border:1px solid #bbf7d0;border-radius:12px;padding:10px;margin-top:10px}
+.hidden.on{display:block}
+.stat{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}
+.box{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:8px;text-align:center}
+.box .k{font-size:9px;color:#6b7280;font-weight:700}
+.box .v{font-weight:900;margin-top:2px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;z-index:100;padding:14px}
+.modal.on{display:flex}
+.modal-card{background:#fff;color:#111;border-radius:16px;width:100%;max-width:380px;overflow:hidden}
+#scan-popup{position:fixed;left:10px;right:10px;bottom:18px;background:#111827;color:#fff;border-radius:14px;padding:12px;display:none;z-index:90}
+#scan-popup.on{display:block}
+.print{display:none}
+.toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 16px;border-radius:10px;font-weight:800;z-index:200}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="brand">
+    <div class="logo">AC</div>
+    <div><div class="t1">ANMOL CHILDRENWEAR</div><div class="t2">POWER BY ANISHHUSEN</div></div>
+  </div>
+  <div class="top-actions">
+    <button class="icon-btn scan" onclick="openScan()">📷</button>
+    <button class="icon-btn eye" id="eye" onclick="toggleEye()">👁️</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="lbl">CUSTOMER <span style="color:#7c3aed" id="billInfo">0 items • ₹0</span></div>
+  <div class="row">
+    <input id="cName" class="input" placeholder="Name">
+    <input id="cMob" class="input" placeholder="Mobile">
+  </div>
+  <div style="height:8px"></div>
+  <div class="row">
+    <input id="skuIn" class="input" placeholder="Scan / Type SKU - e.g. /473155856/319">
+    <button class="btn btn-b" onclick="openScan()">📷</button>
+    <button class="btn btn-p" onclick="doAdd()">Add</button>
+  </div>
+  <div class="chips">
+    <div class="chip on" data-cat="All" onclick="setCat(this)">All</div>
+    <div class="chip" data-cat="Boys" onclick="setCat(this)">Boys</div>
+    <div class="chip" data-cat="Girls" onclick="setCat(this)">Girls</div>
+    <div class="chip" data-cat="Baby" onclick="setCat(this)">Baby</div>
+    <div class="chip" data-cat="Scanned" onclick="setCat(this)">Scanned</div>
+  </div>
+  <input id="search" class="input" style="margin-top:8px" placeholder="Search name / sku" oninput="renderMaster()">
+  <div id="master"></div>
+  <button class="btn btn-g" style="width:100%;margin-top:8px" onclick="openMaster()">+ Naya Item (Selling + Cost)</button>
+</div>
+
+<div class="card">
+  <div class="lbl">BILL ITEMS <button class="btn btn-g" style="padding:4px 8px;font-size:10px" onclick="clearBill()">Clear</button></div>
+  <div id="bill"></div>
+
+  <div id="hidden" class="hidden">
+    <div class="lbl" style="margin:0">🔒 HIDDEN - SIRF TUMHARA <span style="font-weight:400;text-transform:none">customer ko nahi dikhega</span></div>
+    <div class="stat">
+      <div class="box"><div class="k">BILL</div><div class="v" id="hb">₹0</div></div>
+      <div class="box"><div class="k">COST</div><div class="v" id="hc">₹0</div></div>
+      <div class="box"><div class="k">PROFIT</div><div class="v" id="hp" style="color:#059669">₹0</div></div>
+    </div>
+    <div id="hiddenTable"></div>
+  </div>
+
+  <div class="row" style="margin-top:10px">
+    <button class="btn btn-p" style="flex:1" onclick="saveBill()">Save</button>
+    <button class="btn btn-b" style="flex:1" onclick="printBill()">Print</button>
+    <button class="btn btn-g" onclick="shareBill()">Share</button>
+  </div>
+</div>
+
+<div id="qr-modal" class="modal"><div class="modal-card">
+  <div style="padding:12px;display:flex;justify-content:space-between;font-weight:900">Scan QR <button class="btn btn-g" onclick="closeScan()">✕</button></div>
+  <div id="reader" style="background:#000;min-height:260px"></div>
+  <div id="scanStatus" style="padding:8px 12px;font-size:11px;color:#6b7280">Camera start ho raha hai...</div>
+  <div style="padding:12px;display:flex;gap:8px"><button class="btn btn-g" style="flex:1" onclick="manualScan()">Manual</button><button class="btn btn-b" style="flex:1" onclick="closeScan()">Close</button></div>
+</div></div>
+
+<div id="master-modal" class="modal"><div class="modal-card" style="padding:14px">
+  <div style="font-weight:900">Naya Item</div><div style="font-size:11px;color:#6b7280">Selling = customer ka, Cost = tumhara ghar ka</div>
+  <div style="display:grid;gap:8px;margin-top:10px">
+    <input id="mName" class="input" placeholder="Name e.g. RIDER-03">
+    <div class="row"><input id="mSku" class="input" placeholder="SKU 473155856"><input id="mRate" type="number" class="input" placeholder="Selling Rate"></div>
+    <div class="row"><input id="mCost" type="number" class="input" placeholder="Cost Price ghar ka"><select id="mCat" class="input"><option>Boys</option><option>Girls</option><option>Baby</option><option>Scanned</option></select></div>
+    <div style="display:flex;justify-content:space-between;font-size:11px"><span>Code Rule: 3,4,5→slice1 | 9,10→3-6 | 11→3-7</span><b id="mCode" style="color:#7c3aed">0</b></div>
+    <div class="row"><button class="btn btn-p" style="flex:1" onclick="saveMaster()">Save Master</button><button class="btn btn-g" onclick="closeMaster()">Cancel</button></div>
+  </div>
+</div></div>
+
+<div id="scan-popup"></div>
+<div id="printArea" class="print"></div>
+
+<div id="share-modal" class="modal"><div style="background:#fff;border-radius:16px;padding:16px;width:100%;max-width:300px">
+  <div style="font-weight:900;text-align:center;margin-bottom:10px">Share Bill</div>
+  <button class="btn btn-p" style="width:100%;margin-bottom:6px" onclick="shareAs('img')">Image</button>
+  <button class="btn btn-b" style="width:100%;margin-bottom:6px" onclick="shareAs('pdf')">PDF</button>
+  <button class="btn btn-g" style="width:100%" onclick="document.getElementById('share-modal').classList.remove('on')">Cancel</button>
+</div></div>
+
+<script>
+let items=[], bill=[], cat='All', scanner=null, eyeOn=false;
+
+function skuCode(sku){
+  let n=(sku||'').replace(/\D/g,'');
+  if(n.length===3||n.length===4||n.length===5) return parseInt(n.slice(1))||0;
+  if(n.length===9||n.length===10) return parseInt(n.slice(3,6))||0;
+  if(n.length===11) return parseInt(n.slice(3,7))||0;
+  return 0;
+}
+
+function parseScan(d){
+  let raw=d.trim(); let parts=raw.split('/').map(s=>s.trim()).filter(Boolean);
+  let name='', sku='', rate='';
+  if(parts.length>=3){ rate=parts.pop().replace(/\D/g,''); sku=parts.pop().replace(/[^0-9A-Za-z-]/g,''); name=parts.join(' / ')||('Item '+sku); }
+  else if(parts.length===2){ sku=parts[0].replace(/[^0-9]/g,''); rate=parts[1].replace(/\D/g,''); name='Item '+sku; let maybe=raw.split(sku)[0].replace(/[^A-Za-z ]/g,'').trim(); if(maybe.length>2&&maybe.length<30) name=maybe; }
+  else if(parts.length===1){ sku=parts[0].replace(/[^0-9A-Za-z-]/g,''); }
+  else { if(raw.includes('-')){ let p=raw.split('-'); name=p[0]; sku=p[1]||''; rate=p[2]||''; } }
+  if(name.toLowerCase().includes('anmol')||name.length>28){ let m=raw.match(/Baby[^/]*/i); name=m?m[0].trim():'Baby Item '+sku.slice(-4); }
+  if(!sku) sku=String(Date.now()).slice(-6);
+  return {name:name||'Item '+sku, sku, rate:rate.replace(/\D/g,''), code:skuCode(sku), raw};
+}
+
+function load(){
+  try{ items=JSON.parse(localStorage.getItem('fresh_items')||'[]'); bill=JSON.parse(localStorage.getItem('fresh_draft')||'[]'); }catch{}
+  if(items.length===0){
+    items=[
+      {id:'1',name:'Godri',sku:'676120240',rate:250,cost:180,cat:'Baby'},
+      {id:'2',name:'RIDER-03 ONION',sku:'473155856',rate:319,cost:240,cat:'Baby'},
+      {id:'3',name:'Baba Suit',sku:'2405101020',rate:380,cost:260,cat:'Boys'},
+      {id:'4',name:'Frock',sku:'467130260',rate:450,cost:320,cat:'Girls'},
+    ];
+  }
+}
+load();
+function save(){ localStorage.setItem('fresh_items',JSON.stringify(items)); localStorage.setItem('fresh_draft',JSON.stringify(bill)); }
+
+function setCat(el){ cat=el.dataset.cat; document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on')); el.classList.add('on'); renderMaster(); }
+
+function renderMaster(){
+  let q=(document.getElementById('search').value||'').toLowerCase();
+  let sq=(document.getElementById('skuIn').value||'').toLowerCase();
+  let list=document.getElementById('master');
+  let f=items.filter(it=>{
+    if(cat!=='All'&&it.cat!==cat) return false;
+    let hay=(it.name+' '+it.sku).toLowerCase();
+    if(q&&!hay.includes(q)) return false;
+    if(sq&&!hay.includes(sq)) return false;
+    return true;
+  });
+  let html='<table><tr><th>#</th><th>ITEM</th><th>RATE</th><th></th></tr>';
+  f.forEach((it,i)=>{
+    html+=`<tr><td>${i+1}</td><td><b>${it.name}</b><br><span style="font-size:10px;color:#6b7280">${it.sku} | Cost ₹${it.cost} | Code ${skuCode(it.sku)}</span></td><td><b>₹${it.rate}</b></td><td><button class="btn btn-p" style="padding:6px 10px;font-size:11px" onclick="addToBill('${it.id}')">Add</button></td></tr>`;
+  });
+  html+='</table>'; if(f.length===0) html+='<div style="text-align:center;color:#9ca3af;padding:12px;font-size:12px">Koi item nahi</div>';
+  list.innerHTML=html;
+}
+
+function renderBill(){
+  let c=document.getElementById('bill');
+  let total=bill.reduce((s,it)=>s+it.total,0);
+  document.getElementById('billInfo').textContent=bill.length+' items • ₹'+total;
+  if(bill.length===0){ c.innerHTML='<div style="text-align:center;color:#9ca3af;padding:14px;font-size:12px">Bill khali hai - upar se add karo</div>'; updateHidden(); save(); return; }
+  let html='<table><tr><th>#</th><th>ITEM</th><th>QTY</th><th>TOTAL</th><th></th></tr>';
+  bill.forEach((it,i)=>{
+    html+=`<tr><td>${i+1}</td><td><b>${it.name}</b><br><span style="font-size:10px">${it.sku} @ ₹${it.rate}</span></td><td><div style="display:flex;gap:4px;align-items:center"><button onclick="qty(${i},-1)" style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:6px">-</button><span>${it.qty}</span><button onclick="qty(${i},1)" style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:6px">+</button></div></td><td><b>₹${it.total}</b></td><td><button onclick="rem(${i})" style="background:#fee2e2;color:#dc2626;border:none;padding:4px 6px;border-radius:6px">✕</button></td></tr>`;
+  });
+  html+='</table>'; c.innerHTML=html; updateHidden(); save();
+}
+function addToBill(id){ let it=items.find(x=>x.id===id); if(!it) return; let idx=bill.findIndex(b=>b.sku===it.sku); if(idx>=0){ bill[idx].qty++; bill[idx].total=bill[idx].qty*bill[idx].rate; } else bill.push({name:it.name,sku:it.sku,rate:it.rate,cost:it.cost||0,qty:1,total:it.rate}); renderBill(); toast('Added '+it.name); }
+function qty(i,d){ bill[i].qty+=d; if(bill[i].qty<=0) bill.splice(i,1); else bill[i].total=bill[i].qty*bill[i].rate; renderBill(); }
+function rem(i){ bill.splice(i,1); renderBill(); }
+function clearBill(){ if(!bill.length) return; if(confirm('Bill clear karu?')){ bill=[]; renderBill(); } }
+
+function updateHidden(){
+  let bt=bill.reduce((s,it)=>s+it.total,0);
+  let ct=bill.reduce((s,it)=>s+(it.cost*it.qty),0);
+  let pt=bt-ct;
+  document.getElementById('hb').textContent='₹'+bt;
+  document.getElementById('hc').textContent='₹'+ct;
+  document.getElementById('hp').textContent='₹'+pt;
+  document.getElementById('hp').style.color=pt>=0?'#059669':'#dc2626';
+  let ht='<table style="margin-top:8px"><tr><th>ITEM</th><th>SELL</th><th>COST</th><th>PROFIT</th></tr>';
+  bill.forEach(it=>{ let p=(it.rate-it.cost)*it.qty; ht+=`<tr><td>${it.name} x${it.qty}</td><td>₹${it.rate*it.qty}</td><td>₹${it.cost*it.qty}</td><td style="font-weight:800;color:${p>=0?'#059669':'#dc2626'}">₹${p}</td></tr>`; });
+  ht+='</table>'; document.getElementById('hiddenTable').innerHTML=bt?ht:'';
+}
+
+function toggleEye(){ eyeOn=!eyeOn; document.getElementById('hidden').classList.toggle('on',eyeOn); document.getElementById('eye').classList.toggle('on',eyeOn); document.getElementById('eye').textContent=eyeOn?'🙈':'👁️'; if(eyeOn) updateHidden(); }
+
+function openMaster(){ document.getElementById('master-modal').classList.add('on'); }
+function closeMaster(){ document.getElementById('master-modal').classList.remove('on'); }
+function saveMaster(){
+  let name=document.getElementById('mName').value.trim(), sku=document.getElementById('mSku').value.trim(), rate=document.getElementById('mRate').value, cost=document.getElementById('mCost').value, cat=document.getElementById('mCat').value;
+  if(!name){ alert('Name'); return; }
+  if(items.find(i=>i.sku===sku&&sku)){ alert('SKU exists'); return; }
+  let id=String(Date.now()).slice(-6);
+  items.unshift({id,name,sku:sku||id,rate:parseFloat(rate)||0,cost:parseFloat(cost)||0,cat});
+  closeMaster(); renderMaster(); save(); toast('Saved');
+  document.getElementById('mName').value=''; document.getElementById('mSku').value=''; document.getElementById('mRate').value=''; document.getElementById('mCost').value='';
+}
+
+function doAdd(){
+  let v=document.getElementById('skuIn').value.trim(); if(!v){ toast('SKU likho'); return; }
+  let pr=parseScan(v);
+  let found=items.find(i=>i.sku===pr.sku||i.name.toLowerCase()===pr.name.toLowerCase());
+  if(found) addToBill(found.id);
+  else showPopup(pr);
+}
+
+function showPopup(pr){
+  let pop=document.getElementById('scan-popup');
+  pop.innerHTML=`<div style="font-weight:900">Master me nahi hai</div><div style="font-size:12px;margin-top:4px">${pr.name} | ${pr.sku} | ₹${pr.rate} | Code ${pr.code}</div><div class="row" style="margin-top:8px"><button class="btn btn-p" style="flex:1" onclick="quickAdd('${pr.name.replace(/'/g,"\\'")}','${pr.sku}','${pr.rate}')">Cost puch ke Add</button><button class="btn btn-g" onclick="closePop()">Cancel</button></div>`;
+  pop.classList.add('on');
+}
+function closePop(){ document.getElementById('scan-popup').classList.remove('on'); }
+function quickAdd(name,sku,rate){
+  let cost=prompt('Tumhara ghar ka Cost kitna? e.g. 240',''); if(cost===null) return;
+  let id=String(Date.now()).slice(-6);
+  items.unshift({id,name,sku,rate:parseFloat(rate)||0,cost:parseFloat(cost)||0,cat:'Scanned'});
+  bill.push({name,sku,rate:parseFloat(rate)||0,cost:parseFloat(cost)||0,qty:1,total:parseFloat(rate)||0});
+  closePop(); renderMaster(); renderBill(); toast('Master + Bill me add');
+}
+
+function openScan(){
+  document.getElementById('qr-modal').classList.add('on');
+  document.getElementById('scanStatus').textContent='Camera starting...';
+  if(!window.Html5Qrcode){ document.getElementById('scanStatus').textContent='Library fail - manual use karo'; return; }
+  scanner=new Html5Qrcode('reader');
+  scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:250,height:250}}, txt=>{
+    document.getElementById('scanStatus').textContent='Scanned: '+txt; handleScan(txt);
+  },()=>{}).catch(e=>{ document.getElementById('scanStatus').textContent='Error: '+e; });
+}
+function closeScan(){ document.getElementById('qr-modal').classList.remove('on'); if(scanner){ scanner.stop().then(()=>{scanner.clear();scanner=null;}).catch(()=>{}); } }
+function manualScan(){ let v=prompt('QR text paste karo ex: /473155856/319 ya GODRI/2340/960'); if(v) handleScan(v); }
+function handleScan(txt){
+  closeScan();
+  let pr=parseScan(txt);
+  let found=items.find(i=>i.sku===pr.sku);
+  if(found){ addToBill(found.id); }
+  else showPopup(pr);
+  if(navigator.vibrate) navigator.vibrate(50);
+}
+
+function getBillHTML(){
+  let cname=document.getElementById('cName').value||'Customer', mob=document.getElementById('cMob').value||'';
+  let tot=bill.reduce((s,it)=>s+it.total,0);
+  return `<div style="width:80mm;font-family:monospace;padding:8px;background:#fff;color:#000">
+    <div style="text-align:center;border-bottom:1px dashed #000;padding-bottom:6px"><div style="font-weight:900;font-size:15px">ANMOL CHILDRENWEAR</div><div style="font-size:9px">POWER BY ANISHHUSEN</div><div style="font-size:11px;margin-top:4px">${cname} ${mob?'| '+mob:''}</div><div style="font-size:10px">${new Date().toLocaleDateString()}</div></div>
+    <table style="width:100%;font-size:11px;border-collapse:collapse;margin-top:6px"><tr style="border-bottom:1px solid #000"><th style="text-align:left">ITEM</th><th>QTY</th><th style="text-align:right">AMT</th></tr>
+    ${bill.map(it=>`<tr><td>${it.name}<br><span style="font-size:9px">${it.sku}</span></td><td style="text-align:center">${it.qty}</td><td style="text-align:right">₹${it.total}</td></tr>`).join('')}
+    <tr style="border-top:1px dashed #000;font-weight:900"><td colspan="2">TOTAL</td><td style="text-align:right">₹${tot}</td></tr></table>
+    <div style="text-align:center;font-size:10px;margin-top:8px">Thank You! Visit Again</div></div>`;
+}
+
+function printBill(){ if(!bill.length){ toast('Bill khali'); return; } let html=getBillHTML(); let w=window.open('','_blank','width=380,height=600'); w.document.write('<html><head><title>Print</title><style>@page{size:80mm auto;margin:0}</style></head><body>'+html+'</body></html>'); w.document.close(); setTimeout(()=>w.print(),500); }
+function saveBill(){ if(!bill.length){ toast('Bill khali'); return; } let all=[]; try{ all=JSON.parse(localStorage.getItem('fresh_bills')||'[]'); }catch{} let tot=bill.reduce((s,it)=>s+it.total,0), cost=bill.reduce((s,it)=>s+it.cost*it.qty,0); all.unshift({id:Date.now(),no:String(all.length+1).padStart(4,'0'),date:new Date().toLocaleDateString(),customer:document.getElementById('cName').value,total:tot,cost,profit:tot-cost,lines:[...bill]}); localStorage.setItem('fresh_bills',JSON.stringify(all)); bill=[]; renderBill(); toast('Saved Profit ₹'+(tot-cost)); }
+function shareBill(){ if(!bill.length){ toast('Bill khali'); return; } document.getElementById('share-modal').classList.add('on'); }
+function shareAs(type){
+  document.getElementById('share-modal').classList.remove('on');
+  let area=document.getElementById('printArea'); area.innerHTML=getBillHTML(); area.style.display='block';
+  html2canvas(area,{scale:2,backgroundColor:'#fff'}).then(canvas=>{
+    if(type==='img'){
+      canvas.toBlob(b=>{ let f=new File([b],'bill.png',{type:'image/png'}); if(navigator.canShare&&navigator.canShare({files:[f]})) navigator.share({files:[f]}).catch(()=>{}); else { let a=document.createElement('a'); a.href=canvas.toDataURL(); a.download='bill.png'; a.click(); } area.style.display='none'; });
+    }else{
+      let img=canvas.toDataURL('image/png'); let pdf=new jspdf.jsPDF({unit:'mm',format:[80,200]}); let w=80,h=canvas.height*w/canvas.width; pdf.addImage(img,'PNG',0,0,w,h); let blob=pdf.output('blob'); let f=new File([blob],'bill.pdf',{type:'application/pdf'}); if(navigator.canShare&&navigator.canShare({files:[f]})) navigator.share({files:[f]}).catch(()=>{}); else pdf.save('bill.pdf'); area.style.display='none';
+    }
+  });
+}
+function toast(m){ let t=document.createElement('div'); t.className='toast'; t.textContent=m; document.body.appendChild(t); setTimeout(()=>t.remove(),1800); }
+document.getElementById('mSku').addEventListener('input',e=>{ document.getElementById('mCode').textContent=skuCode(e.target.value); });
+
+renderMaster(); renderBill();
+</script>
+</body>
+</html>
